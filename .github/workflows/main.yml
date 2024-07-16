@@ -39,7 +39,7 @@ jobs:
     - name: Start playit
       run: playit --stdout
 
-    - name: Display playit status
+    - name: Display playit status 
       run: playit --stdout
 
     - name: Cleanup  
