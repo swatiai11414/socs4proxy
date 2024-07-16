@@ -42,7 +42,7 @@ jobs:
     - name: Display playit status
       run: playit --stdout
 
-    - name: Cleanup 
+    - name: Cleanup  
       run: |
         git config --global --add safe.directory /home/runner/work/${{ github.repository }}
         git config --local --name-only --get-regexp core\.sshCommand
