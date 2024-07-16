@@ -1,0 +1,52 @@
+name: Playit and Tor Setup
+
+on: [push]
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15  # This sets a 15-minute timeout for the entire job
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl gnupg
+
+    - name: Install Tor
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tor
+
+    - name: Start Tor Service
+      run: |
+        sudo service tor start
+
+    - name: Check Tor Service Status
+      run: |
+        sudo service tor status
+
+    - name: Add playit repository and install
+      run: |
+        curl -SsL https://playit-cloud.github.io/ppa/key.gpg | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/playit.gpg >/dev/null
+        echo "deb [signed-by=/etc/apt/trusted.gpg.d/playit.gpg] https://playit-cloud.github.io/ppa/data ./" | sudo tee /etc/apt/sources.list.d/playit-cloud.list
+        sudo apt-get update
+        sudo apt-get install -y playit
+
+    - name: Start playit
+      run: playit --stdout
+
+    - name: Display playit status
+      run: playit --stdout
+
+    - name: Cleanup
+      run: |
+        git config --global --add safe.directory /home/runner/work/${{ github.repository }}
+        git config --local --name-only --get-regexp core\.sshCommand
+        git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+        git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+        git config --local --unset-all http.https://github.com/.extraheader
+        git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\\.https\\://github\\.com/\\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
